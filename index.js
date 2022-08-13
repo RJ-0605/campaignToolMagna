@@ -6,8 +6,8 @@ const bodyParser = require("body-parser");
 const CsvUpload = require("express-fileupload");
 
 app.use(CsvUpload());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb'}));
 
 const csvParser = require('csv-parser');
 const fs = require('fs');
@@ -124,106 +124,169 @@ app.get('/sendcsv', async(req,res)=> {
     let data = ""
 
     let uniquestring = getDateTimeUniqueString()
+    const testFunc = ()=>{
 
-    var count = 0
+        var data = JSON.stringify({
+          "GENERATEOTP": {
+            "MOBILEPHONE": 10000000458,
+            "OTPEMAIL": "jedidiahkwao@gmail.com",
+            "PARTYID": 0,
+            "RESEND": "FALSE"
+          }
+        });
+
+        var config = {
+          method: 'post',
+          url: `https://tvanywhere-support.magnaquest.com/webapi/Restapi/GenerateOTP?ReferenceNo=17412eatatja${uniquestring}t834xzf09opdewgdgx6433s1283825y531533abcwwwqsrtdqasdsdfafwe335fdas74767yter5650khghe43wq764832`,
+          headers: {
+            'Username': 'GLOTVWEBAPI',
+            'Password': 'Gloweb@1234',
+            'Externalparty': 'tvanywhere',
+            'Content-Type': 'application/json'
+          },
+          data : data
+        };
+
+        axios(config)
+        .then(function (response) {
+          return console.log("OTp call Success", response.data);
+
+        })
+        .catch(function (error) {
+          console.log("testfunc Error", error);
+        });
+
+    }
+
+
+    // testFunc()
+
+
+
+
     var successStatus = ""
 
+    let numberArray = []
+
     fs.createReadStream(filepath)
-    .on('error', () => {
-        // handle error
-         return res.status(401).json({success: true, error: 'null', data: data, message : "Not Done"})
-    })
+            .on('error', () => {
+                // handle error
+                 return res.status(401).json({success: true, error: 'null', data: data, message : "Not Done"})
+            })
 
-    .pipe(csvParser())
-    .on('data', (row) => {
-        // use row data
-        // console.log("row", row.MSISDN)
+            .pipe(csvParser())
+            .on('data', (row) => {
+                // use row data
+                // console.log("row", row.MSISDN)
 
-        console.log("sending MSISDN", "0" + row.MSISDN.substring(3))
-
-
-        let numberMSISDN = "0" + row.MSISDN.substring(3)
-
-        try {
+                console.log("sending MSISDN", "0" + row.MSISDN.substring(3))
 
 
-            var data = JSON.stringify({
-                "PROSPECTINFO": {
-                    "PROSPECTNO": "",
-                    "PARTYTYPE": "I",
-                    "FIRSTNAME": "Test",
-                    "MIDDLENAME": "",
-                    "LASTNAME": "Prospect2",
-                    "OPENTITY": "GLOTV"
-                },
-                "CONTACTINFO": {
-                    "CONTACTNAME": numberMSISDN,
-                    "EMAIL": "prospectstyt@test.com",
-                    "MOBILEPHONE": numberMSISDN
-                },
-                "TRAILPLANINFO": {
-                    "HASTRAILPLAN": ""
-                },
-                "ADDRESSINFO": {
-                    "ADDRESSTYPECODE": "PRI",
-                    "COUNTRY": "Nigeria"
-                }
-            });
+                let numberMSISDN = "0" + row.MSISDN.substring(3)
+                    // sendProcessFunc(numberMSISDN)
+                // testFunc()
 
-            var config = {
-                method: 'post',
-                url: `https://tvanywhere-support.magnaquest.com/webapi/Restapi/CreateProspect?ReferenceNo=prosp1xxxx${uniquestring}123`,
-                headers: {
-                    'Password': 'Gloweb@1234',
-                    'Username': 'GLOTVWEBAPI',
-                    'Content-Type': 'application/json'
-                },
-                data: data
-            };
+                numberArray.push(numberMSISDN)
 
-            axios(config)
-                .then(function (response) {
-                    console.log("done", response.data);
-                    count = count + 1
-                    res.status(200).json({success: true, error: 'null', data: data, message: "csv here"})
+            })
 
-                })
-                .catch(function (error) {
-                    console.log("error");
-                    successStatus = false
+            .on('end', () => {
+                // handle end of CSV
 
-                    return res.status(401).json({success: true, error: 'null', data: data, message: "Not Done"})
-                });
+                console.log("number Array", numberArray)
+                return res.status(200).json({success: true, error: 'null', data: numberArray, message : " Done"})
+
+            })
 
 
-        }catch(exception){
-                              let status = 403
-                              let error = true
-                              success= false
-    ``
-                              return res.status(401).json({error: 'invalid username or password'})
-               }
-
-    })
-
-    .on('end', () => {
-        // handle end of CSV
-        if(successStatus === false){
-            console.log(count, "transactions failed")
-
-        }else{
-
-            console.log(count, "transactions done")
-
-        }
-
-
-    })
+            // for (const elem of numberArray) {
+            //         console.log("elem", elem)
+            //         setTimeout(()=>{testFunc(elem)}, 3000)
+            //
+            //
+            //     }
 
 
 })
 
 
+app.post('/createProspectMagna', (req, res)=>{
+
+    let arrayCSV = req.body.arrayCSV
+    let count = 0
+
+    let uniquestring = getDateTimeUniqueString()
+
+    const sendProcessFunc = (numberMSISDN, count)=>{
+        try {
+
+
+                    var data = JSON.stringify({
+                        "PROSPECTINFO": {
+                            "PROSPECTNO": "",
+                            "PARTYTYPE": "I",
+                            "FIRSTNAME": "Test",
+                            "MIDDLENAME": "",
+                            "LASTNAME": "Prospect2",
+                            "OPENTITY": "GLOTV"
+                        },
+                        "CONTACTINFO": {
+                            "CONTACTNAME": numberMSISDN,
+                            "EMAIL": "prospectstyt@test.com",
+                            "MOBILEPHONE": numberMSISDN
+                        },
+                        "TRAILPLANINFO": {
+                            "HASTRAILPLAN": ""
+                        },
+                        "ADDRESSINFO": {
+                            "ADDRESSTYPECODE": "PRI",
+                            "COUNTRY": "Nigeria"
+                        }
+                    });
+
+                    var config = {
+                        method: 'post',
+                        url: `https://tvanywhere-support.magnaquest.com/webapi/Restapi/CreateProspect?ReferenceNo=prosp1xxxx${uniquestring}123`,
+                        headers: {
+                            'Password': 'Gloweb@1234',
+                            'Username': 'GLOTVWEBAPI',
+                            'Content-Type': 'application/json'
+                        },
+                        data: data
+                    };
+
+                    axios(config)
+                        .then(function (response) {
+                            count = count + 1
+
+                            console.log("transaction complete", count, response.data);
+
+
+                        })
+                        .catch(function (error) {
+                            console.log("error");
+                        });
+
+
+                }catch(exception){
+                                      let status = 403
+                                      let error = true
+                                      let success= false
+                                      // return res.status(401).json({error: 'invalid username or password'})
+                       }
+
+    }
+
+
+     for (const elem of arrayCSV) {
+         console.log("elem", elem)
+         let numberMSISDN = elem
+
+         setTimeout(()=>{sendProcessFunc(numberMSISDN, count)}, 3000)}
+
+
+    return res.status(200).json({success: true, error: 'null', data: arrayCSV, success_count: count, message : " transaction complete"})
+})
 
 
 app.listen(8000, () => {

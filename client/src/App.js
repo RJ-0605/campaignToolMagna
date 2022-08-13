@@ -8,7 +8,35 @@ function App() {
 
     // <input type="file" name="file" onChange={SetCsvFile(e.target.files[0])}/>
 
+    const [arrayCSV, setArrayCSV]= useState("")
+
+
     const sendToMagna = () =>{
+
+
+        var data = {"arrayCSV": arrayCSV}
+
+        var config = {
+              method: 'post',
+              url: 'http://localhost:8000/createProspectMagna',
+              headers: { },
+              data: data
+            };
+
+            axios(config)
+            .then(function (response) {
+              console.log("send to magna", response.data);
+
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+
+    }
+
+
+
+    const getCSVArrayValues = () =>{
 
 
         var config = {
@@ -19,13 +47,17 @@ function App() {
 
             axios(config)
             .then(function (response) {
-              console.log("send to magna", response.data);
+              console.log("read csv ", response.data);
+              setArrayCSV(response.data.data)
             })
             .catch(function (error) {
               console.log(error);
             });
 
     }
+
+
+
 
 
     const hitSendCSV = () => {
@@ -47,6 +79,11 @@ function App() {
             .then(res => console.log(res))
             .catch(err => console.log(err));
     }
+
+
+    useEffect(() => {
+
+    }, [arrayCSV]);
 
 
   return (
@@ -71,6 +108,13 @@ function App() {
 
             <br/>
             <br/>
+            <button
+                onClick={() => {getCSVArrayValues()}}
+                >
+                Read CSV
+            </button>
+            <br />
+            <br />
             <button
                 onClick={() => {sendToMagna()}}
                 >
