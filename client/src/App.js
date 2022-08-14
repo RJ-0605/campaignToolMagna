@@ -6,6 +6,7 @@ import {
   Route,
 } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage";
+import DirectPage from "./pages/DirectPage";
 
 function App() {
 
@@ -14,6 +15,9 @@ function App() {
       <div>
         <Routes>
           <Route path="/homepage" element={<HomePage/>} />
+        </Routes>
+        <Routes>
+          <Route path="/directpage" element={<DirectPage/>} />
         </Routes>
       </div>
     </BrowserRouter>
