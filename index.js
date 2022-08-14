@@ -292,6 +292,14 @@ app.post('/createProspectMagna', (req, res)=>{
     return res.status(200).json({success: true, error: 'null', data: arrayCSV, success_count: count, message : " transaction complete"})
 })
 
+
+app.use(express.static(path.resolve(__dirname, 'client/build')));
+
+// All other GET requests not handled before will return our React app
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'client/build', 'index.html'));
+});
+
 app.set('host', 'localhost');
 
 
