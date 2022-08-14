@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios'
 import { useForm } from "react-hook-form";
 
-function HomePage() {
+function Index() {
     const [csvFile, setCsvFile] = useState();
     const [csvFileName, setCsvFileName] = useState("");
     const [proceedToMagna, setProceedToMagna]= useState(false);
@@ -263,4 +263,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default Index;
