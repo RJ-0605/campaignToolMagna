@@ -214,23 +214,6 @@ function HomePage() {
             .catch(err => console.log(err));
     }
 
-    const onSubmit = async (data) => {
-        const formData = new FormData();
-        formData.append("file", data.file[0]);
-
-        const url = "http://localhost:8000/upload";
-           axios({
-                method: 'POST',
-                url: url,
-                headers: {
-                    ContentType: 'multipart/form-data'
-                },
-                data: formData
-            })
-                .then(res => console.log(res))
-                .catch(err => console.log(err));
-        }
-
 
   return (
     <div className="App">
@@ -242,15 +225,6 @@ function HomePage() {
           <br/>
         <div>
           Select file
-            {/*<form onSubmit={handleSubmit(onSubmit)}>*/}
-            {/*    <input type="file" {...register("file")} multiple accept="image/*"/>*/}
-
-            {/*    <button*/}
-            {/*        className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"*/}
-            {/*        type="submit" >*/}
-            {/*        Submit*/}
-            {/*    </button>*/}
-            {/*</form>*/}
 
           <input type="file"
                  multiple accept="text/plain, .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
