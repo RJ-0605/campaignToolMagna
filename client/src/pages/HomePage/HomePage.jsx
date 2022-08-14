@@ -1,11 +1,15 @@
 import '../../App.css';
 import React, { useState, useEffect } from "react";
 import axios from 'axios'
+import { useForm } from "react-hook-form";
 
 function HomePage() {
     const [csvFile, setCsvFile] = useState();
-    const [csvFileName, setCsvFileName] = useState();
+    const [csvFileName, setCsvFileName] = useState("");
     const [proceedToMagna, setProceedToMagna]= useState(false);
+
+    const { register, handleSubmit } = useForm();
+
     const [reading, setReading]= useState()
 
     // <input type="file" name="file" onChange={SetCsvFile(e.target.files[0])}/>
@@ -66,13 +70,21 @@ function HomePage() {
 
 
 
-    const getCSVArrayValues = () =>{
+    const readCSVIntoArray = () =>{
 
+        let tempFileName = csvFileName
+
+        var sendData = {
+          "fileName": tempFileName
+        };
 
         var config = {
-              method: 'get',
-              url: 'http://localhost:8000/sendcsv',
-              headers: { }
+              method: 'post',
+              url: 'http://localhost:8000/readcsv',
+              headers: {
+                  ContentType: 'application/json'
+              },
+              data: sendData
             };
 
             axios(config)
@@ -182,13 +194,13 @@ function HomePage() {
     }, [arrayCSV, proceedToMagna]);
 
 
-    const hitSendCSV = () => {
+    const uploadCSV = async() => {
 
         const formData = new FormData();
-        formData.append('FileName', csvFileName);
+        formData.append('fileName', csvFileName);
         formData.append('file', csvFile);
 
-        const url = 'http://localhost:8000/EXPRESSENDPOINT';
+        const url = 'http://localhost:8000/upload';
 
         axios({
             method: 'POST',
@@ -202,6 +214,24 @@ function HomePage() {
             .catch(err => console.log(err));
     }
 
+    const onSubmit = async (data) => {
+        const formData = new FormData();
+        formData.append("file", data.file[0]);
+
+        const url = "http://localhost:8000/upload";
+           axios({
+                method: 'POST',
+                url: url,
+                headers: {
+                    ContentType: 'multipart/form-data'
+                },
+                data: formData
+            })
+                .then(res => console.log(res))
+                .catch(err => console.log(err));
+        }
+
+
   return (
     <div className="App">
       <header className="App-header">
@@ -212,12 +242,27 @@ function HomePage() {
           <br/>
         <div>
           Select file
-          <input type="file" name="file" onChange={(e) => {
+            {/*<form onSubmit={handleSubmit(onSubmit)}>*/}
+            {/*    <input type="file" {...register("file")} multiple accept="image/*"/>*/}
+
+            {/*    <button*/}
+            {/*        className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"*/}
+            {/*        type="submit" >*/}
+            {/*        Submit*/}
+            {/*    </button>*/}
+            {/*</form>*/}
+
+          <input type="file"
+                 multiple accept="text/plain, .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                 name="file"
+                 onChange={(e) => {
                                                         setCsvFile(e.target.files[0]);
                                                         setCsvFileName(e.target.files[0].name)
                                                         }} />
-            <button type="button"
-                 onClick={() => {hitSendCSV()}}
+            <button
+                type="button"
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                 onClick={() => {uploadCSV()}}
                 >
                 Submit
             </button>
@@ -225,13 +270,15 @@ function HomePage() {
             <br/>
             <br/>
             <button
-                onClick={() => {getCSVArrayValues()}}
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => {readCSVIntoArray()}}
                 >
                 Read CSV
             </button>
             <br />
             <br />
             <button
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
                 onClick={() => {setProceedToMagna(!proceedToMagna)}}
                 >
                 Proceed

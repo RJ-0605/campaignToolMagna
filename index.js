@@ -1,47 +1,57 @@
-const express = require("express");
-const app = express();
-const http = require("http");
-
+const express = require('express');
+require('dotenv').config()
+const path = require('path');
+const jwt = require('jsonwebtoken')
+const fs = require('fs')
 const cors = require('cors');
+const bodyParser = require('body-parser');
+const app = express();
 
-const bodyParser = require("body-parser");
-const CsvUpload = require("express-fileupload");
 
-app.use(CsvUpload());
+// storing public data images and stuff
+
+// app.use(express.static("./public"))
+
+app.use(express.static( path.join(__dirname, "./public") ));
+
+
+// storing public data images and stuff
+
+/*------------------------------------------
+--------------------------------------------
+parse application/json
+--------------------------------------------
+--------------------------------------------*/
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json());
+
+// ------cors------
+app.use(cors())
+
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
 
 const csvParser = require('csv-parser');
-const fs = require('fs');
 
  var axios = require('axios');
 
-app.use(cors(corsOptions));
-
-var corsOptions = {
-    origin: 'http://localhost:3000',
-    optionsSuccessStatus: 200 // For legacy browser support
-}
-
-
-require('dotenv').config()
+ require('dotenv').config()
 
 const multer = require('multer')
-const path = require('path')
-
-app.use(express.static( 'public') );
-// const port = process.env.PORT || 8000
 
 
+const port = process.env.PORT || 8000
+
+const server_url = process.env.DEVELOPMENT_SERVER_URL || "https://"
 
 //! Use of Multer
 var storage = multer.diskStorage({
     destination: (req, file, callBack) => {
-        callBack(null, './public/')
+        callBack(null, './public/uploads/')
       // './public/images/' directory name where save the file
     },
     filename: (req, file, callBack) => {
-        callBack(null, file.fieldname + Date.now() + path.extname(file.originalname))
+        callBack(null, req.body.fileName)
     }
 })
 
@@ -50,8 +60,40 @@ var upload = multer({
 });
 
 
-// var uploads = multer({ dest: './public/' })
 
+
+//@type   POST
+//route for post data
+app.post("/upload", upload.single('file'), (req, res) => {
+    if (!req.file ) {
+
+        console.log("No file upload or file already exists ");
+        return res.status(401).json({success: false, error: true, message: 'check request data for this kind of post and retry '})
+
+    }else if( fs.existsSync('./public/uploads/' + req.body.fileName)) {
+
+        console.log("file already exists ");
+        return res.status(401).json({success: false, error: true, message: 'file already exists'})
+
+    }else {
+      console.log("port sending", port)
+
+      // this is dev imagelink
+
+      var imgsrc = req.body.fileName
+
+
+      console.log("file_link", imgsrc, "and this is file name present", req.body.fileName)
+
+      let data = {
+            image_name: req.body.fileName,
+            image_link: imgsrc
+          };
+
+      return res.status(200).json({success: true, error: 'null', data: data})
+    }
+
+});
 
 app.get("/", (request, response) => {
     response.send("Hi there");
@@ -60,37 +102,11 @@ app.get("/", (request, response) => {
 
 
 
-app.use('/EXPRESSENDPOINT', upload.single('file'), (req, res, next) => {
-    console.log(req.body.FileName)
-    console.log(req.body.file)
-
-    if (!req.body.FileName) {
-        console.log("No file upload");
-        return res.status(401).json({success: false, error: 'check request data for this kind of post and retry '})
-    } else {
-        // console.log("port sending", port)
-
-
-        var csvSrc =  req.body.FileName
-
-        console.log("csvSrc", csvSrc, "and this is file name", req.body.FileName)
-
-        let data = {
-            FileName: csvSrc
-        };
-
-        return res.status(200).json({success: true, error: 'null', data: data, message : "upload complete"})
-    }
-
-    // return res.status(200).json({message: "success"})
-
-
-});
 
 
 
 
-const filepath = './public/61_100K.csv'
+
 
 const getDateTimeUniqueString = () => {
           var now     = new Date();
@@ -121,8 +137,10 @@ const getDateTimeUniqueString = () => {
           return uniquestring;
       }
 
-app.get('/sendcsv', async(req,res)=> {
+app.post('/readcsv', (req,res)=> {
     // console.log(" req here ")
+
+    const filepath = './public/uploads/' + req.body.fileName
     let data = ""
 
     let uniquestring = getDateTimeUniqueString()
@@ -161,10 +179,8 @@ app.get('/sendcsv', async(req,res)=> {
     }
 
 
-    // testFunc()
 
-
-
+    console.log("filepath is present", req.body)
 
     var successStatus = ""
 
@@ -173,7 +189,7 @@ app.get('/sendcsv', async(req,res)=> {
     fs.createReadStream(filepath)
             .on('error', () => {
                 // handle error
-                 return res.status(401).json({success: true, error: 'null', data: data, message : "Not Done"})
+                 return res.status(401).json({success: true, error: 'null', data: data, message : "file path error"})
             })
 
             .pipe(csvParser())
@@ -200,13 +216,6 @@ app.get('/sendcsv', async(req,res)=> {
 
             })
 
-
-            // for (const elem of numberArray) {
-            //         console.log("elem", elem)
-            //         setTimeout(()=>{testFunc(elem)}, 3000)
-            //
-            //
-            //     }
 
 
 })
@@ -300,12 +309,9 @@ app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'client/build', 'index.html'));
 });
 
-app.set('host', 'localhost');
+// app.set('host', 'localhost');
 
 
-const server = http.createServer({}, app).listen(8000);
-console.log("listening on  port ", 8000, "host", app.get("host"))
-
-// This is the important stuff
-server.keepAliveTimeout = (60 * 1000) + 1000;
-server.headersTimeout = (60 * 1000) + 2000;
+app.listen(port,() =>{
+  console.log(`Server started on port ${port}...`);
+});

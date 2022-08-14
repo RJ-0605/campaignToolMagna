@@ -11,8 +11,6 @@ const DirectPage = () =>{
               Hello world!
             </h1>
 
-
-
         </>
     )
 }
