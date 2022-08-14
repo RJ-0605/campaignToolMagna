@@ -6,6 +6,7 @@ function HomePage() {
     const [csvFile, setCsvFile] = useState();
     const [csvFileName, setCsvFileName] = useState();
     const [proceedToMagna, setProceedToMagna]= useState(false);
+    const [reading, setReading]= useState()
 
     // <input type="file" name="file" onChange={SetCsvFile(e.target.files[0])}/>
 
