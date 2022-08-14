@@ -1,5 +1,7 @@
 const express = require("express");
 const app = express();
+const http = require("http");
+
 const cors = require('cors');
 
 const bodyParser = require("body-parser");
@@ -264,7 +266,7 @@ app.post('/createProspectMagna', (req, res)=>{
 
                         })
                         .catch(function (error) {
-                            console.log("error");
+                            console.log("error", error);
                         });
 
 
@@ -282,13 +284,20 @@ app.post('/createProspectMagna', (req, res)=>{
          console.log("elem", elem)
          let numberMSISDN = elem
 
-         setTimeout(()=>{sendProcessFunc(numberMSISDN, count)}, 3000)}
+         sendProcessFunc(numberMSISDN, count)
+         // setTimeout(()=>{sendProcessFunc(numberMSISDN, count)}, 12000)
+     }
 
 
     return res.status(200).json({success: true, error: 'null', data: arrayCSV, success_count: count, message : " transaction complete"})
 })
 
+app.set('host', 'localhost');
 
-app.listen(8000, () => {
-    console.log("Listen on the port 8000...");
-});
+
+const server = http.createServer({}, app).listen(8000);
+console.log("listening on  port ", 8000, "host", app.get("host"))
+
+// This is the important stuff
+server.keepAliveTimeout = (60 * 1000) + 1000;
+server.headersTimeout = (60 * 1000) + 2000;

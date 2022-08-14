@@ -5,11 +5,40 @@ import axios from 'axios'
 function App() {
     const [csvFile, setCsvFile] = useState();
     const [csvFileName, setCsvFileName] = useState();
+    const [proceedToMagna, setProceedToMagna]= useState(false);
 
     // <input type="file" name="file" onChange={SetCsvFile(e.target.files[0])}/>
 
-    const [arrayCSV, setArrayCSV]= useState("")
+    const [arrayCSV, setArrayCSV]= useState([])
 
+    const getDateTimeUniqueString = () => {
+          var now     = new Date();
+          var year    = now.getFullYear();
+          var month   = now.getMonth()+1;
+          var day     = now.getDate();
+          var hour    = now.getHours();
+          var minute  = now.getMinutes();
+          var second  = now.getSeconds();
+          if(month.toString().length == 1) {
+              month = '0'+month;
+          }
+          if(day.toString().length == 1) {
+              day = '0'+day;
+          }
+          if(hour.toString().length == 1) {
+              hour = '0'+hour;
+          }
+          if(minute.toString().length == 1) {
+              minute = '0'+minute;
+          }
+          if(second.toString().length == 1) {
+              second = '0'+second;
+          }
+          var dateTime = year+month+day+hour+minute+second;
+          let  uniquestring= String(dateTime)
+
+          return uniquestring;
+      }
 
     const sendToMagna = () =>{
 
@@ -59,6 +88,98 @@ function App() {
 
 
 
+    const sendProcessFunc = (numberMSISDN)=>{
+
+
+        try {
+
+
+                    var data = JSON.stringify({
+                        "PROSPECTINFO": {
+                            "PROSPECTNO": "",
+                            "PARTYTYPE": "I",
+                            "FIRSTNAME": "Test",
+                            "MIDDLENAME": "",
+                            "LASTNAME": "Prospect2",
+                            "OPENTITY": "GLOTV"
+                        },
+                        "CONTACTINFO": {
+                            "CONTACTNAME": numberMSISDN,
+                            "EMAIL": "prospectstyt@test.com",
+                            "MOBILEPHONE": numberMSISDN
+                        },
+                        "TRAILPLANINFO": {
+                            "HASTRAILPLAN": ""
+                        },
+                        "ADDRESSINFO": {
+                            "ADDRESSTYPECODE": "PRI",
+                            "COUNTRY": "Nigeria"
+                        }
+                    });
+
+                    var config = {
+                        method: 'post',
+                        url: `https://tvanywhere-support.magnaquest.com/webapi/Restapi/CreateProspect?ReferenceNo=prosp1xxxx${uniquestring}123`,
+                        headers: {
+                            'Password': 'Gloweb@1234',
+                            'Username': 'GLOTVWEBAPI',
+                            'Content-Type': 'application/json'
+                        },
+                        data: data
+                    };
+
+                    axios(config)
+                        .then(function (response) {
+                            console.log("transaction complete", response.data);
+                            return true
+
+
+
+                        })
+                        .catch(function (error) {
+                            console.log("error", error);
+                            return false
+                        });
+
+
+                }catch(exception){
+                                      let status = 403
+                                      let error = true
+                                      let success= false
+                                      // return res.status(401).json({error: 'invalid username or password'})
+                       }
+
+    }
+
+    let uniquestring = getDateTimeUniqueString()
+
+
+
+
+
+    useEffect(() => {
+
+        console.log("arrayCSV", arrayCSV)
+
+        if (arrayCSV.length == 100000 && proceedToMagna){
+            let count = 0
+            for (const elem of arrayCSV) {
+                console.log("elem", elem)
+                let numberMSISDN = elem
+
+                let processSuccess = sendProcessFunc(numberMSISDN)
+
+                if(processSuccess) {
+                    count = count + 1
+                    console.log("count", count)
+                }
+                // setTimeout(()=>{sendProcessFunc(numberMSISDN, count)}, 12000)
+            }
+            console.log("final count", count)
+        }else{console.log("arrayCSV waiting to proceed or read ", arrayCSV)}
+
+    }, [arrayCSV, proceedToMagna]);
+
 
     const hitSendCSV = () => {
 
@@ -79,12 +200,6 @@ function App() {
             .then(res => console.log(res))
             .catch(err => console.log(err));
     }
-
-
-    useEffect(() => {
-
-    }, [arrayCSV]);
-
 
   return (
     <div className="App">
@@ -116,7 +231,7 @@ function App() {
             <br />
             <br />
             <button
-                onClick={() => {sendToMagna()}}
+                onClick={() => {setProceedToMagna(!proceedToMagna)}}
                 >
                 Proceed
             </button>
