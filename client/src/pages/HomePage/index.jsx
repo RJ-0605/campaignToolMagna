@@ -101,11 +101,12 @@ function Index() {
 
 
 
-    const sendProcessFunc = (numberMSISDN)=>{
-
+    const sendProcessFunc = (numberMSISDN, count)=>{
+             // return true
 
         try {
 
+                   let uniquestring = getDateTimeUniqueString()
 
                     var data = JSON.stringify({
                         "PROSPECTINFO": {
@@ -132,7 +133,7 @@ function Index() {
 
                     var config = {
                         method: 'post',
-                        url: `https://tvanywhere-support.magnaquest.com/webapi/Restapi/CreateProspect?ReferenceNo=prosp1xxxx${uniquestring}123`,
+                        url: `https://tvanywhere-support.magnaquest.com/webapi/Restapi/CreateProspect?ReferenceNo=prosp1x${numberMSISDN}xxx${uniquestring}123${count}`,
                         headers: {
                             'Password': 'Gloweb@1234',
                             'Username': 'GLOTVWEBAPI',
@@ -174,21 +175,23 @@ function Index() {
 
         console.log("arrayCSV", arrayCSV)
 
-        if (arrayCSV.length == 100000 && proceedToMagna){
+        if (arrayCSV.length == 53368 && proceedToMagna){
             let count = 0
             for (const elem of arrayCSV) {
                 console.log("elem", elem)
                 let numberMSISDN = elem
 
-                let processSuccess = sendProcessFunc(numberMSISDN)
+                let processSuccess = sendProcessFunc(numberMSISDN, count)
 
                 if(processSuccess) {
                     count = count + 1
                     console.log("count", count)
                 }
                 // setTimeout(()=>{sendProcessFunc(numberMSISDN, count)}, 12000)
+
             }
             console.log("final count", count)
+            setProceedToMagna(false)
         }else{console.log("arrayCSV waiting to proceed or read ", arrayCSV)}
 
     }, [arrayCSV, proceedToMagna]);

@@ -144,41 +144,6 @@ app.post('/readcsv', (req,res)=> {
     let data = ""
 
     let uniquestring = getDateTimeUniqueString()
-    const testFunc = ()=>{
-
-        var data = JSON.stringify({
-          "GENERATEOTP": {
-            "MOBILEPHONE": 10000000458,
-            "OTPEMAIL": "jedidiahkwao@gmail.com",
-            "PARTYID": 0,
-            "RESEND": "FALSE"
-          }
-        });
-
-        var config = {
-          method: 'post',
-          url: `https://tvanywhere-support.magnaquest.com/webapi/Restapi/GenerateOTP?ReferenceNo=17412eatatja${uniquestring}t834xzf09opdewgdgx6433s1283825y531533abcwwwqsrtdqasdsdfafwe335fdas74767yter5650khghe43wq764832`,
-          headers: {
-            'Username': 'GLOTVWEBAPI',
-            'Password': 'Gloweb@1234',
-            'Externalparty': 'tvanywhere',
-            'Content-Type': 'application/json'
-          },
-          data : data
-        };
-
-        axios(config)
-        .then(function (response) {
-          return console.log("OTp call Success", response.data);
-
-        })
-        .catch(function (error) {
-          console.log("testfunc Error", error);
-        });
-
-    }
-
-
 
     console.log("filepath is present", req.body)
 
@@ -197,10 +162,12 @@ app.post('/readcsv', (req,res)=> {
                 // use row data
                 // console.log("row", row.MSISDN)
 
-                console.log("sending MSISDN", "0" + row.MSISDN.substring(3))
+                // console.log("sending MSISDN", "0" + row.MSISDN.substring(3))
+                // let numberMSISDN = "0" + row.MSISDN.substring(3)
 
+                console.log("sending MSISDN", "0" + row.MSISDN)
+                let numberMSISDN = "0" + row.MSISDN
 
-                let numberMSISDN = "0" + row.MSISDN.substring(3)
                     // sendProcessFunc(numberMSISDN)
                 // testFunc()
 
